@@ -17,6 +17,7 @@ train.csv
 out
 *.zip
 *.tar
+*.tar.gz
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
