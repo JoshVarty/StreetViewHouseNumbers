@@ -4,12 +4,18 @@ import data_loader
 import os
 
 class DigitStruct:
+
+    directory = ""
+    labels_path = ""
+
     def __init__(self, file):
         self.file = h5py.File(file, 'r')
         self.digit_struct_name = self.file['digitStruct']['name']
         self.digit_struct_bbox = self.file['digitStruct']['bbox']
+        self.directory = os.path.dirname(file)
 
-    def load_labels_or_extract(self, file_path):
+    def load_labels_and_paths(self):
+        file_path = os.path.join(self.directory, "labels_and_paths.pickle")
 
         result = data_loader.openPickle(file_path)
         if result != None:
@@ -27,9 +33,8 @@ class DigitStruct:
             label_numbers = struct["label"]
 
             if(len(label_numbers) > max_digits):
-                print("THIS ONE HAS MORE THAN FIVE DIGITS:", i)
+                print("Ignoring element with more than five digits", i)
                 print(struct)
-                #Skip it
                 continue
             new_labels = []
             for j in range(0, len(label_numbers)):
@@ -44,6 +49,8 @@ class DigitStruct:
             labels.append(new_labels)
             paths.append(struct["name"])
 
+        labels = np.array(labels)
+        paths = np.array(paths)
         data_loader.savePickle((labels,paths), file_path)
         return (labels, paths)
 
