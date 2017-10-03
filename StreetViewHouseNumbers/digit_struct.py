@@ -22,7 +22,7 @@ class DigitStruct:
             return result
 
         print("We need to extract the labels from the structure file. This will take a few minutes...")
-        num_labels = 11
+        num_labels = 10
         max_digits = 5
         all_structs = self.get_all_imgs_and_digit_structure()
 
