@@ -149,7 +149,8 @@ def TrainConvNet():
         labels4 = tf.squeeze(tf.slice(labels, [0, 3, 0], [-1, 1, num_digits]), axis=1)
         labels5 = tf.squeeze(tf.slice(labels, [0, 4, 0], [-1, 1, num_digits]), axis=1)
 
-        #We don't want to backpropagate cost on outputs that are 
+        #We don't want to backpropagate cost on outputs that aren't used. (eg. The fourth number if the sequence is only three digits)
+        #We'll handle this by gating the inputs and multiplying by 1 or 0.
         five_gate = tf.minimum(lengths[:,4], [1.0])
         four_gate = tf.maximum(lengths[:,3], five_gate)
         three_gate = tf.maximum(lengths[:,2], four_gate)
