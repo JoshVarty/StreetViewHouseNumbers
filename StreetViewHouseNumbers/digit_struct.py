@@ -37,6 +37,10 @@ class DigitStruct:
                 print(struct)
                 continue
             new_labels = []
+            #Add length as first item
+            one_hot_length = (np.arange(max_digits) == len(label_numbers)).astype(np.float32)
+            new_labels.append(one_hot_length)
+
             for j in range(0, len(label_numbers)):
                 label = int(label_numbers[j])
                 newLabel = (np.arange(num_labels) == label).astype(np.float32)
