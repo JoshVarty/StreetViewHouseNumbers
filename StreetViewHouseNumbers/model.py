@@ -157,11 +157,11 @@ def TrainConvNet():
         one_gate = tf.maximum(lengths[:,0], two_gate)
 
         cost_length = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=lengths, logits=z_l))
-        cost1 = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=labels1, logits=z_s_1)) * one_gate
-        cost2 = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=labels2, logits=z_s_2)) * two_gate
-        cost3 = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=labels3, logits=z_s_3)) * three_gate
-        cost4 = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=labels4, logits=z_s_4)) * four_gate
-        cost5 = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=labels5, logits=z_s_5)) * five_gate
+        cost1 = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=labels1, logits=z_s_1) * one_gate)
+        cost2 = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=labels2, logits=z_s_2) * two_gate)
+        cost3 = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=labels3, logits=z_s_3) * three_gate)
+        cost4 = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=labels4, logits=z_s_4) * four_gate)
+        cost5 = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=labels5, logits=z_s_5) * five_gate)
 
         total_cost = cost_length + cost1 + cost2 + cost3 + cost4 + cost5
 
