@@ -227,28 +227,33 @@ def TrainConvNet():
                     v_steps = 5
                     v_batch_size = int(valid_images.shape[0] / v_steps)
                     v_preds = np.zeros_like(valid_labels)
+                    v_length_preds = np.zeros_like(valid_lengths)
                     for v_step in range(v_steps):
                         v_offset = (v_step * v_batch_size) 
                         v_batch_data = valid_images[v_offset:(v_offset + v_batch_size), :, :, :]
                         v_batch_labels = valid_labels[v_offset:(v_offset + v_batch_size),:]
+                        v_lengths = valid_lengths[v_offset:(v_offset + v_batch_size),:]
 
-                        feed_dict = {input : v_batch_data, labels : v_batch_labels}
-                        _, l, predictions = session.run([optimizer, total_cost, train_prediction], feed_dict=feed_dict)
-                        v_preds[v_offset: v_offset + predictions.shape[0],:,:] = predictions
+                        feed_dict = {input : v_batch_data, labels : v_batch_labels, lengths: v_lengths}
+                        _, l, predictions, length_preds = session.run([optimizer, total_cost, train_prediction, length_prediction], feed_dict=feed_dict)
+                        v_preds[v_offset: v_offset + predictions.shape[0],:] = predictions
+                        v_length_preds[v_offset: v_offset + predictions.shape[0],:] = length_preds
 
                     #If we missed any validation images at the end, process them now
                     if v_steps * v_batch_size < valid_images.shape[0]:
                         v_offset = (v_steps * v_batch_size) 
                         v_batch_data = valid_images[v_offset:valid_images.shape[0] , :, :, :]
                         v_batch_labels = valid_labels[v_offset:valid_images.shape[0],:]
+                        v_lengths = valid_lengths[v_offset:valid_images.shape[0],:]
 
                         feed_dict = {input : v_batch_data, labels : v_batch_labels}
-                        _, l, predictions = session.run([optimizer, total_cost, train_prediction], feed_dict=feed_dict)
-                        v_preds[v_offset: v_offset + predictions.shape[0],:,:] = predictions
+                        _, l, predictions, length_preds = session.run([optimizer, total_cost, train_prediction, length_prediction], feed_dict=feed_dict)
+                        v_preds[v_offset: v_offset + predictions.shape[0],:] = predictions
+                        v_length_preds[v_offset: v_offset + predictions.shape[0],:] = length_preds
 
-                    print('Valid accuracy: %.1f%%' % accuracy(v_preds, valid_labels))
+                    print('Valid accuracy: %.1f%%' % accuracy(valid_labels, valid_lengths, v_preds, v_length_preds))
                 else:
-                    _, l, predictions = session.run([optimizer, total_cost, train_prediction], feed_dict=feed_dict)
+                    _, l, predictions, length_preds = session.run([optimizer, total_cost, train_prediction, length_prediction], feed_dict=feed_dict)
 
 
 TrainConvNet()
