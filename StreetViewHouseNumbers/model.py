@@ -235,7 +235,7 @@ def TrainConvNet():
                         v_lengths = valid_lengths[v_offset:(v_offset + v_batch_size),:]
 
                         feed_dict = {input : v_batch_data, labels : v_batch_labels, lengths: v_lengths}
-                        _, l, predictions, length_preds = session.run([optimizer, total_cost, train_prediction, length_prediction], feed_dict=feed_dict)
+                        l, predictions, length_preds = session.run([total_cost, train_prediction, length_prediction], feed_dict=feed_dict)
                         v_preds[v_offset: v_offset + predictions.shape[0],:] = predictions
                         v_length_preds[v_offset: v_offset + predictions.shape[0],:] = length_preds
 
@@ -247,7 +247,7 @@ def TrainConvNet():
                         v_lengths = valid_lengths[v_offset:valid_images.shape[0],:]
 
                         feed_dict = {input : v_batch_data, labels : v_batch_labels}
-                        _, l, predictions, length_preds = session.run([optimizer, total_cost, train_prediction, length_prediction], feed_dict=feed_dict)
+                        l, predictions, length_preds = session.run([total_cost, train_prediction, length_prediction], feed_dict=feed_dict)
                         v_preds[v_offset: v_offset + predictions.shape[0],:] = predictions
                         v_length_preds[v_offset: v_offset + predictions.shape[0],:] = length_preds
 
