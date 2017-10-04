@@ -38,6 +38,33 @@ def randomize(dataset, labels):
   shuffled_labels = labels[permutation]
   return shuffled_dataset, shuffled_labels
 
+def accuracy(labels, lengths, pred_numbers, pred_lengths):
+    """
+    Accuracy is defined as getting an entire number correct
+    No credit is given for partial solutions.
+    """
+
+    correct = 0
+
+    for i in range(0, len(labels)):
+        label = labels[i]
+        length = lengths[i]
+        p_length = pred_lengths[i]
+        p_numbers = pred_numbers[i]
+
+        #Lengths must be equal
+        if np.argmax(p_length) != np.argmax(length):
+            continue
+
+        #All numbers must be equal
+        intLength = int(np.argwhere(length == 1.0))
+        for idx in range(0, intLength):
+            if np.argmax(p_numbers[idx]) != np.argmax(label[idx]):
+                continue
+
+        correct = correct + 1
+
+    return 100 * correct / lengths.shape[0]
 
 def splitLengthsFromLabels(labels):
     lengths = np.array(labels[:,0].tolist())
@@ -194,7 +221,7 @@ def TrainConvNet():
                 if step % 500 == 0:
                     _, l, predictions, length_preds = session.run([optimizer, total_cost, train_prediction, length_prediction], feed_dict=feed_dict)
                     print('Minibatch loss at step %d: %f' % (step, l))
-                    print('Minibatch accuracy: %.1f%%' % accuracy(predictions, batch_labels))
+                    print('Minibatch accuracy: %.1f%%' % accuracy(batch_labels, batch_lengths, predictions, length_preds))
                     #Validation
 
                     v_steps = 5
