@@ -193,11 +193,11 @@ def TrainConvNet():
         a5 = tf.nn.softmax_cross_entropy_with_logits(labels=labels5, logits=z_s_5) * five_gate
 
         zero_vector = tf.zeros_like(a1, dtype=tf.float32)
-        mask1 = tf.equal(a1, zero_vector)
-        mask2 = tf.equal(a2, zero_vector)
-        mask3 = tf.equal(a3, zero_vector)
-        mask4 = tf.equal(a4, zero_vector)
-        mask5 = tf.equal(a5, zero_vector)
+        mask1 = tf.not_equal(a1, zero_vector)
+        mask2 = tf.not_equal(a2, zero_vector)
+        mask3 = tf.not_equal(a3, zero_vector)
+        mask4 = tf.not_equal(a4, zero_vector)
+        mask5 = tf.not_equal(a5, zero_vector)
 
         t1 = tf.boolean_mask(a1, mask1)
         t2 = tf.boolean_mask(a2, mask1)
