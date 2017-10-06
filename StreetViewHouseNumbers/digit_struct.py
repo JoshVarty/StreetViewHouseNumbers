@@ -36,9 +36,12 @@ class DigitStruct:
                 print("Ignoring element with more than five digits", i)
                 print(struct)
                 continue
+
             new_labels = []
             #Add length as first item
-            one_hot_length = (np.arange(max_digits) == len(label_numbers)).astype(np.float32)
+            #We subtract one because there are no 0-length labels
+            int_length = len(label_numbers) - 1
+            one_hot_length = (np.arange(max_digits) == int_length).astype(np.float32)
             new_labels.append(one_hot_length)
 
             for j in range(0, len(label_numbers)):
