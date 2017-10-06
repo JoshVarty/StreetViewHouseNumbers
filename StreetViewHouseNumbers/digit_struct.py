@@ -47,7 +47,6 @@ class DigitStruct:
                 new_labels.append(newLabel)
             for j in range(len(label_numbers), max_digits):
                 newLabel = (np.zeros(num_labels))
-                newLabel[-1] = 1.0
                 new_labels.append(newLabel)
 
             labels.append(new_labels)
