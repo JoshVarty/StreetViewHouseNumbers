@@ -173,6 +173,18 @@ def TrainConvNet():
 
         cost_length = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=lengths, logits=z_l))
 
+        padded_lengths5 = lengths[:,4]
+        padded_lengths4 = tf.maximum(padded_lengths5, lengths[:,3])
+        padded_lengths3 = tf.maximum(padded_lengths4, lengths[:,2])
+        padded_lengths2 = tf.maximum(padded_lengths3, lengths[:,1])
+        padded_lengths1 = tf.maximum(padded_lengths2, lengths[:,0])
+
+        mask1 = tf.equal(padded_lengths1, [1.0])
+        mask2 = tf.equal(padded_lengths2, [1.0])
+        mask3 = tf.equal(padded_lengths3, [1.0])
+        mask4 = tf.equal(padded_lengths4, [1.0])
+        mask5 = tf.equal(padded_lengths5, [1.0])
+
         labels1 = tf.squeeze(tf.slice(labels, [0, 0, 0], [-1, 1, num_digits]), axis=1)
         labels2 = tf.squeeze(tf.slice(labels, [0, 1, 0], [-1, 1, num_digits]), axis=1)
         labels3 = tf.squeeze(tf.slice(labels, [0, 2, 0], [-1, 1, num_digits]), axis=1)
@@ -185,11 +197,20 @@ def TrainConvNet():
         rawc4 = tf.nn.softmax_cross_entropy_with_logits(labels=labels4, logits=z_s_4)
         rawc5 = tf.nn.softmax_cross_entropy_with_logits(labels=labels5, logits=z_s_5)
 
-        cost1 = tf.reduce_mean(rawc1) 
-        cost2 = tf.reduce_mean(rawc2) 
-        cost3 = tf.reduce_mean(rawc3) 
-        cost4 = tf.reduce_mean(rawc4) 
-        cost5 = tf.reduce_mean(rawc5) 
+        masked1 = tf.boolean_mask(rawc1, mask1)
+        masked2 = tf.boolean_mask(rawc2, mask2)
+        masked3 = tf.boolean_mask(rawc3, mask3)
+        masked4 = tf.boolean_mask(rawc4, mask4)
+        masked5 = tf.boolean_mask(rawc5, mask5)
+
+        #Avoid divide by zero
+        eps = tf.constant([0.00000001], dtype=tf.float32)
+
+        cost1 = tf.reduce_sum(masked1) / (tf.cast(tf.shape(masked1)[0], dtype=tf.float32) + eps)
+        cost2 = tf.reduce_sum(masked2) / (tf.cast(tf.shape(masked2)[0], dtype=tf.float32) + eps)
+        cost3 = tf.reduce_sum(masked3) / (tf.cast(tf.shape(masked3)[0], dtype=tf.float32) + eps)
+        cost4 = tf.reduce_sum(masked4) / (tf.cast(tf.shape(masked4)[0], dtype=tf.float32) + eps)
+        cost5 = tf.reduce_sum(masked5) / (tf.cast(tf.shape(masked5)[0], dtype=tf.float32) + eps)
 
         total_cost = cost_length + cost1 + cost2 + cost3 + cost4 + cost5
 
@@ -219,6 +240,13 @@ def TrainConvNet():
                 feed_dict = {input : batch_data, labels : batch_labels, lengths: batch_lengths}
 
                 if step % 500 == 0:
+                    z3, r3, m3 = session.run([z_s_3, rawc3, masked3], feed_dict=feed_dict)
+                    print(batch_lengths[0])
+                    print(z3)
+                    print(r3)
+                    print(m3)
+
+
                     _, l, predictions, length_preds = session.run([optimizer, total_cost, train_prediction, length_prediction], feed_dict=feed_dict)
                     print('Minibatch loss at step %d: %f' % (step, l))
                     print('Minibatch accuracy: %.1f%%' % accuracy(batch_labels, batch_lengths, predictions, length_preds))
