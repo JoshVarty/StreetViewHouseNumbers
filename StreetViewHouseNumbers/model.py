@@ -25,6 +25,9 @@ if not os.path.exists(digit_structure_path):
 digit_struct = DigitStruct(digit_structure_path)
 labels, paths = digit_struct.load_labels_and_paths()
 
+paths = paths[:10000]
+labels = labels[:10000]
+
 
 image_paths = [TRAIN_DIR + s for s in paths]
 images_normalized = image_helpers.prep_data(image_paths, image_size, num_channels, pixel_depth)
@@ -250,13 +253,6 @@ def TrainConvNet():
                 feed_dict = {input : batch_data, labels : batch_labels, lengths: batch_lengths}
 
                 if step % 500 == 0:
-                    z3, r3, m3 = session.run([z_s_3, rawc3, masked3], feed_dict=feed_dict)
-                    print(batch_lengths[0])
-                    print(z3)
-                    print(r3)
-                    print(m3)
-
-
                     _, l, predictions, length_preds = session.run([optimizer, total_cost, train_prediction, length_prediction], feed_dict=feed_dict)
                     print('Minibatch loss at step %d: %f' % (step, l))
                     print('Minibatch accuracy: %.1f%%' % accuracy(batch_labels, batch_lengths, predictions, length_preds))
