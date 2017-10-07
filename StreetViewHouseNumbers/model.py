@@ -25,8 +25,6 @@ if not os.path.exists(digit_structure_path):
 digit_struct = DigitStruct(digit_structure_path)
 labels, paths = digit_struct.load_labels_and_paths()
 
-labels = labels[:1000]
-paths = paths[:1000]
 
 image_paths = [TRAIN_DIR + s for s in paths]
 images_normalized = image_helpers.prep_data(image_paths, image_size, num_channels, pixel_depth)
@@ -202,7 +200,7 @@ def TrainConvNet():
             tf.nn.softmax(z_s_5)
             ], axis=1)
 
-        optimizer = tf.train.AdamOptimizer(0.000001).minimize(total_cost)
+        optimizer = tf.train.AdamOptimizer(0.0000001).minimize(total_cost)
 
         with tf.Session(graph=graph) as session:
             num_steps = 10000
