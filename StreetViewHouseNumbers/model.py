@@ -223,7 +223,7 @@ def TrainConvNet():
             tf.nn.softmax(z_s_5)
             ], axis=1)
 
-        optimizer = tf.train.AdamOptimizer(0.00001).minimize(total_cost)
+        optimizer = tf.train.AdamOptimizer(0.000001).minimize(total_cost)
 
         with tf.Session(graph=graph) as session:
             num_steps = 10000
