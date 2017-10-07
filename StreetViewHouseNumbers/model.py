@@ -135,13 +135,25 @@ def TrainConvNet():
         b_conv7 = bias_variable("b_conv7", [depth * 8])
         h_conv7 = conv2d_relu(h_conv6, w_conv7, b_conv7)
         h_pool7 = max_pool_2x2(h_conv7)
+        
+        #Conv->Relu->Conv->Relu->Conv->Relu->Pool
+        w_conv8 = weight_layer("w_conv8", [patch_size_3, patch_size_3, depth * 8, depth * 8])
+        b_conv8 = bias_variable("b_conv8", [depth * 8])
+        h_conv8 = conv2d_relu(h_pool7, w_conv8, b_conv8)
+        w_conv9 = weight_layer("w_conv9", [patch_size_3, patch_size_3, depth * 8, depth * 8])
+        b_conv9 = bias_variable("b_conv9", [depth * 8])
+        h_conv9 = conv2d_relu(h_conv8, w_conv9, b_conv9)
+        w_conv10 = weight_layer("w_conv10", [patch_size_3, patch_size_3, depth * 8, depth * 16])
+        b_conv10 = bias_variable("b_conv10", [depth * 16])
+        h_conv10 = conv2d_relu(h_conv9, w_conv10, b_conv10)
+        h_pool10 = max_pool_2x2(h_conv10)
 
         #Dropout -> Fully Connected -> Dropout -> Fully Connected
-        drop_1 = tf.nn.dropout(h_pool7, 1.0)
+        drop_1 = tf.nn.dropout(h_pool10, 1.0)
         shape = drop_1.get_shape().as_list()
         reshape = tf.reshape(drop_1, [-1, shape[1] * shape[2] * shape[3]])
 
-        fc = 16384
+        fc = 8192
         hl = 4096
         w_fc = weight_layer("w_fc", [fc, hl])
         b_fc = bias_variable("b_fc", [hl])
