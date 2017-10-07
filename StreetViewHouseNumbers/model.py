@@ -171,46 +171,25 @@ def TrainConvNet():
         b_s_5 = bias_variable("b_s_5", [num_digits])
         z_s_5 = tf.matmul(h_fc, w_s_5) + b_s_5
 
+        cost_length = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=lengths, logits=z_l))
+
         labels1 = tf.squeeze(tf.slice(labels, [0, 0, 0], [-1, 1, num_digits]), axis=1)
         labels2 = tf.squeeze(tf.slice(labels, [0, 1, 0], [-1, 1, num_digits]), axis=1)
         labels3 = tf.squeeze(tf.slice(labels, [0, 2, 0], [-1, 1, num_digits]), axis=1)
         labels4 = tf.squeeze(tf.slice(labels, [0, 3, 0], [-1, 1, num_digits]), axis=1)
         labels5 = tf.squeeze(tf.slice(labels, [0, 4, 0], [-1, 1, num_digits]), axis=1)
 
-        #We don't want to backpropagate cost on outputs that aren't used. (eg. The fourth number if the sequence is only three digits)
-        #We'll handle this by gating the inputs and multiplying by 1 or 0.
-        five_gate = tf.minimum(lengths[:,4], [1.0])
-        four_gate = tf.maximum(lengths[:,3], five_gate)
-        three_gate = tf.maximum(lengths[:,2], four_gate)
-        two_gate = tf.maximum(lengths[:,1], three_gate)
-        one_gate = tf.maximum(lengths[:,0], two_gate)
+        rawc1 = tf.nn.softmax_cross_entropy_with_logits(labels=labels1, logits=z_s_1)
+        rawc2 = tf.nn.softmax_cross_entropy_with_logits(labels=labels2, logits=z_s_2)
+        rawc3 = tf.nn.softmax_cross_entropy_with_logits(labels=labels3, logits=z_s_3)
+        rawc4 = tf.nn.softmax_cross_entropy_with_logits(labels=labels4, logits=z_s_4)
+        rawc5 = tf.nn.softmax_cross_entropy_with_logits(labels=labels5, logits=z_s_5)
 
-        cost_length = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=lengths, logits=z_l),)
-
-        a1 = tf.nn.softmax_cross_entropy_with_logits(labels=labels1, logits=z_s_1) * one_gate
-        a2 = tf.nn.softmax_cross_entropy_with_logits(labels=labels2, logits=z_s_2) * two_gate
-        a3 = tf.nn.softmax_cross_entropy_with_logits(labels=labels3, logits=z_s_3) * three_gate
-        a4 = tf.nn.softmax_cross_entropy_with_logits(labels=labels4, logits=z_s_4) * four_gate
-        a5 = tf.nn.softmax_cross_entropy_with_logits(labels=labels5, logits=z_s_5) * five_gate
-
-        zero_vector = tf.zeros_like(a1, dtype=tf.float32)
-        mask1 = tf.not_equal(a1, zero_vector)
-        mask2 = tf.not_equal(a2, zero_vector)
-        mask3 = tf.not_equal(a3, zero_vector)
-        mask4 = tf.not_equal(a4, zero_vector)
-        mask5 = tf.not_equal(a5, zero_vector)
-
-        t1 = tf.boolean_mask(a1, mask1)
-        t2 = tf.boolean_mask(a2, mask1)
-        t3 = tf.boolean_mask(a3, mask1)
-        t4 = tf.boolean_mask(a4, mask1)
-        t5 = tf.boolean_mask(a5, mask1)
-
-        cost1 = tf.reduce_mean(t1)
-        cost2 = tf.reduce_mean(t2)
-        cost3 = tf.reduce_mean(t3)
-        cost4 = tf.reduce_mean(t4)
-        cost5 = tf.reduce_mean(t5)
+        cost1 = tf.reduce_mean(rawc1) 
+        cost2 = tf.reduce_mean(rawc2) 
+        cost3 = tf.reduce_mean(rawc3) 
+        cost4 = tf.reduce_mean(rawc4) 
+        cost5 = tf.reduce_mean(rawc5) 
 
         total_cost = cost_length + cost1 + cost2 + cost3 + cost4 + cost5
 
