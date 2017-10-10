@@ -25,12 +25,6 @@
     <Compile Include="data_loader.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="digit_struct.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="image_helpers.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="model.py" />
   </ItemGroup>
   <ItemGroup>
