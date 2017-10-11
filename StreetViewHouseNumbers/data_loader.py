@@ -77,14 +77,17 @@ def load_data():
       shuffled_labels = labels[permutation]
       return shuffled_dataset, shuffled_labels
 
-    valid_data_rand, valid_labels_rand = randomize(valid_data, valid_labels)
-    train_data_rand, train_labels_rand = randomize(train_data, train_labels)
+    valid_data, valid_labels= randomize(valid_data, valid_labels)
+    train_data, train_labels= randomize(train_data, train_labels)
 
     train_data = im2gray(train_data)[:,:,:,0]
     valid_data = im2gray(valid_data)[:,:,:,0]
 
     train_data = GCN(train_data)
     valid_data = GCN(valid_data)
+    
+    train_data = train_data.reshape((train_data.shape[0], train_data.shape[1], train_data.shape[2], 1))
+    valid_data = valid_data.reshape((valid_data.shape[0], valid_data.shape[1], valid_data.shape[2], 1))
 
     savePickle((train_data, train_labels, valid_data, valid_labels), os.path.join(pickle_path))
     return (train_data, train_labels, valid_data, valid_labels)
