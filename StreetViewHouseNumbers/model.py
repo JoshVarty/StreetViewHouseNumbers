@@ -41,7 +41,7 @@ def TrainConvNet():
     with graph.as_default():
         input = tf.placeholder(tf.float32, shape=(None, image_size, image_size, num_channels), name="input")
         labels = tf.placeholder(tf.int32, shape=(None), name="labels")
-        #keep_prob = tf.placeholder(tf.float32)
+        keep_prob = tf.placeholder(tf.float32, shape=(1), name="keep_prob")
 
         #Conv->Relu->Conv->Relu->Pool
         with tf.name_scope("Layer1"):
@@ -124,7 +124,7 @@ def TrainConvNet():
                 batch_data = train_data[offset:(offset + batch_size), :, :]
                 batch_labels = np.squeeze(train_labels[offset:(offset + batch_size), :])
 
-                feed_dict = {input : batch_data, labels : batch_labels} 
+                feed_dict = {input : batch_data, labels : batch_labels, keep_prob : 0.5} 
 
                 if step % 500 == 0:
                     _, l, predictions, = session.run([optimizer, cost, train_prediction], feed_dict=feed_dict)
@@ -140,7 +140,7 @@ def TrainConvNet():
                         v_batch_data = valid_data[v_offset:(v_offset + v_batch_size), :, :]
                         v_batch_labels = np.squeeze(valid_labels[v_offset:(v_offset + v_batch_size),:])
 
-                        feed_dict = {input : v_batch_data, labels : v_batch_labels}
+                        feed_dict = {input : v_batch_data, labels : v_batch_labels, keep_prob : 1.0}
                         l, predictions = session.run([cost, train_prediction], feed_dict=feed_dict)
                         v_preds[v_offset: v_offset + predictions.shape[0],:] = predictions
 
@@ -150,7 +150,7 @@ def TrainConvNet():
                         v_batch_data = valid_data[v_offset:valid_data.shape[0] , :, :, :]
                         v_batch_labels = np.squeeze(valid_labels[v_offset:valid_data.shape[0],:])
 
-                        feed_dict = {input : v_batch_data, labels : v_batch_labels}
+                        feed_dict = {input : v_batch_data, labels : v_batch_labels, keep_prob : 1.0}
                         l, predictions, = session.run([total_cost, train_prediction], feed_dict=feed_dict)
                         v_preds[v_offset: v_offset + predictions.shape[0],:] = predictions
 
