@@ -42,6 +42,7 @@ def TrainConvNet():
         input = tf.placeholder(tf.float32, shape=(None, image_size, image_size, num_channels), name="input")
         labels = tf.placeholder(tf.int32, shape=(None), name="labels")
         keep_prob = tf.placeholder(tf.float32, shape=(), name="keep_prob")
+        learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
 
         #Conv->Relu->Conv->Relu->Pool
         with tf.name_scope("Layer1"):
@@ -109,7 +110,7 @@ def TrainConvNet():
 
         train_prediction = tf.nn.softmax(z_s_1)
 
-        optimizer = tf.train.AdamOptimizer(0.00001).minimize(cost)
+        optimizer = tf.train.AdamOptimizer(learning_rate).minimize(cost)
 
         with tf.Session(graph=graph) as session:
             writer = tf.summary.FileWriter("/tmp/svhn_single")
@@ -118,13 +119,16 @@ def TrainConvNet():
             batch_size = 64
             tf.global_variables_initializer().run()
             print("Initialized")
-
+            lr = 0.0001
             for step in range(num_steps):
                 offset = (step * batch_size) % (train_labels.shape[0] - batch_size)
                 batch_data = train_data[offset:(offset + batch_size), :, :]
                 batch_labels = np.squeeze(train_labels[offset:(offset + batch_size), :])
 
-                feed_dict = {input : batch_data, labels : batch_labels, keep_prob : 0.5} 
+                feed_dict = {input : batch_data, labels : batch_labels, keep_prob : 0.5, learning_rate: lr} 
+
+                if step % 5000:
+                    lr = lr / 2
 
                 if step % 500 == 0:
                     _, l, predictions, = session.run([optimizer, cost, train_prediction], feed_dict=feed_dict)
@@ -140,7 +144,7 @@ def TrainConvNet():
                         v_batch_data = valid_data[v_offset:(v_offset + v_batch_size), :, :]
                         v_batch_labels = np.squeeze(valid_labels[v_offset:(v_offset + v_batch_size),:])
 
-                        feed_dict = {input : v_batch_data, labels : v_batch_labels, keep_prob : 1.0}
+                        feed_dict = {input : v_batch_data, labels : v_batch_labels, keep_prob : 1.0, learning_rate: lr}
                         l, predictions = session.run([cost, train_prediction], feed_dict=feed_dict)
                         v_preds[v_offset: v_offset + predictions.shape[0],:] = predictions
 
@@ -150,7 +154,7 @@ def TrainConvNet():
                         v_batch_data = valid_data[v_offset:valid_data.shape[0] , :, :, :]
                         v_batch_labels = np.squeeze(valid_labels[v_offset:valid_data.shape[0],:])
 
-                        feed_dict = {input : v_batch_data, labels : v_batch_labels, keep_prob : 1.0}
+                        feed_dict = {input : v_batch_data, labels : v_batch_labels, keep_prob : 1.0, learning_rate: lr}
                         l, predictions, = session.run([total_cost, train_prediction], feed_dict=feed_dict)
                         v_preds[v_offset: v_offset + predictions.shape[0],:] = predictions
 
