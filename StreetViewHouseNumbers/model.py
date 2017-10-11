@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import data_loader
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
@@ -144,11 +144,11 @@ def TrainConvNet():
 
         train_prediction = tf.nn.softmax(z_s_1)
 
-        optimizer = tf.train.AdamOptimizer(0.0000001).minimize(cost)
+        optimizer = tf.train.AdamOptimizer(0.00001).minimize(cost)
 
         with tf.Session(graph=graph) as session:
             num_steps = 10000
-            batch_size = 32
+            batch_size = 64
             tf.global_variables_initializer().run()
             print("Initialized")
 
