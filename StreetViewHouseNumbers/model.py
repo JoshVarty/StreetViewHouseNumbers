@@ -41,7 +41,7 @@ def TrainConvNet():
     with graph.as_default():
         input = tf.placeholder(tf.float32, shape=(None, image_size, image_size, num_channels), name="input")
         labels = tf.placeholder(tf.int32, shape=(None), name="labels")
-        keep_prob = tf.placeholder(tf.float32, shape=(1), name="keep_prob")
+        keep_prob = tf.placeholder(tf.float32, shape=(), name="keep_prob")
 
         #Conv->Relu->Conv->Relu->Pool
         with tf.name_scope("Layer1"):
