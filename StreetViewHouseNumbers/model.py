@@ -13,57 +13,6 @@ num_digits = 10
 patch_size_3 = 3
 depth = 16
 
-digit_structure_path = os.path.join(TRAIN_DIR, "digitStruct.mat")
-
-#Check if data exists
-if not os.path.exists(digit_structure_path):
-    data_loader.get_training_data(INPUT_ROOT, "train.tar.gz")
-
-digit_struct = DigitStruct(digit_structure_path)
-labels, paths = digit_struct.load_labels_and_paths()
-
-paths = paths[:10000]
-labels = labels[:10000]
-
-
-image_paths = [TRAIN_DIR + s for s in paths]
-images_normalized = image_helpers.prep_data(image_paths, image_size, num_channels, pixel_depth)
-
-np.random.seed(42)
-def randomize(dataset, labels):
-  permutation = np.random.permutation(labels.shape[0])
-  shuffled_dataset = dataset[permutation,:,:,:]
-  shuffled_labels = labels[permutation]
-  return shuffled_dataset, shuffled_labels
-
-def accuracy(labels, lengths, pred_numbers, pred_lengths):
-    """
-    Accuracy is defined as getting an entire number correct
-    No credit is given for partial solutions.
-    """
-
-    correct = 0
-
-    for i in range(0, len(labels)):
-        label = labels[i]
-        length = lengths[i]
-        p_length = pred_lengths[i]
-        p_numbers = pred_numbers[i]
-
-        #Lengths must be equal
-        if np.argmax(p_length) != np.argmax(length):
-            continue
-
-        #All numbers must be equal
-        intLength = int(np.argwhere(length == 1.0))
-        for idx in range(0, intLength):
-            if np.argmax(p_numbers[idx]) != np.argmax(label[idx]):
-                continue
-
-        correct = correct + 1
-
-    return 100 * correct / lengths.shape[0]
-
 train_data, train_labels, valid_data, valid_labels = data_loader.load_data()
 
 print("Train data", train_data.shape)
@@ -218,29 +167,29 @@ def TrainConvNet():
 
                     v_steps = 10
                     v_batch_size = int(valid_data.shape[0] / v_steps)
-                    v_preds = np.zeros_like(valid_labels)
+                    v_preds = np.zeros((valid_labels.shape[0], num_digits))
                     for v_step in range(v_steps):
                         v_offset = (v_step * v_batch_size) 
                         v_batch_data = valid_data[v_offset:(v_offset + v_batch_size), :, :]
-                        v_batch_labels = valid_labels[v_offset:(v_offset + v_batch_size),:]
+                        v_batch_labels = np.squeeze(valid_labels[v_offset:(v_offset + v_batch_size),:])
 
                         feed_dict = {input : v_batch_data, labels : v_batch_labels}
-                        l, predictions = session.run([total_cost, train_prediction], feed_dict=feed_dict)
+                        l, predictions = session.run([cost, train_prediction], feed_dict=feed_dict)
                         v_preds[v_offset: v_offset + predictions.shape[0],:] = predictions
 
                     #If we missed any validation images at the end, process them now
                     if v_steps * v_batch_size < valid_data.shape[0]:
                         v_offset = (v_steps * v_batch_size) 
                         v_batch_data = valid_data[v_offset:valid_data.shape[0] , :, :, :]
-                        v_batch_labels = valid_labels[v_offset:valid_data.shape[0],:]
+                        v_batch_labels = np.squeeze(valid_labels[v_offset:valid_data.shape[0],:])
 
                         feed_dict = {input : v_batch_data, labels : v_batch_labels}
                         l, predictions, = session.run([total_cost, train_prediction], feed_dict=feed_dict)
                         v_preds[v_offset: v_offset + predictions.shape[0],:] = predictions
 
-                    print('Valid accuracy: %.1f%%' % accuracy(valid_labels, v_preds))
+                    print('Valid accuracy: %.1f%%' % accuracy(np.squeeze(valid_labels), v_preds))
                 else:
-                    _, l, predictions, = session.run([optimizer, total_cost, train_prediction], feed_dict=feed_dict)
+                    _, l, predictions, = session.run([optimizer, cost, train_prediction], feed_dict=feed_dict)
 
 
 TrainConvNet()
