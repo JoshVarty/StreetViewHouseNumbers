@@ -147,6 +147,8 @@ def TrainConvNet():
         optimizer = tf.train.AdamOptimizer(0.00001).minimize(cost)
 
         with tf.Session(graph=graph) as session:
+            writer = tf.summary.FileWriter("/tmp/svhn_single")
+            writer.add_graph(session.graph)
             num_steps = 10000
             batch_size = 64
             tf.global_variables_initializer().run()
