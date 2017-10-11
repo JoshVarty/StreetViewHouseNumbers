@@ -127,8 +127,9 @@ def TrainConvNet():
 
                 feed_dict = {input : batch_data, labels : batch_labels, keep_prob : 0.5, learning_rate: lr} 
 
-                if step % 5000:
+                if step % 5000 == 0:
                     lr = lr / 2
+                    print("Learning Rate: ", lr)
 
                 if step % 500 == 0:
                     _, l, predictions, = session.run([optimizer, cost, train_prediction], feed_dict=feed_dict)
