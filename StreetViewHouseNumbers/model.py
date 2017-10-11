@@ -39,8 +39,8 @@ def TrainConvNet():
 
     graph = tf.Graph()
     with graph.as_default():
-        input = tf.placeholder(tf.float32, shape=(None, image_size, image_size, num_channels))
-        labels = tf.placeholder(tf.int32, shape=(None))
+        input = tf.placeholder(tf.float32, shape=(None, image_size, image_size, num_channels), name="input")
+        labels = tf.placeholder(tf.int32, shape=(None), name="labels")
         #keep_prob = tf.placeholder(tf.float32)
 
         #Conv->Relu->Conv->Relu->Pool
