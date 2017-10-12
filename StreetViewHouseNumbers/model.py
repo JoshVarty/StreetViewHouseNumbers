@@ -6,6 +6,7 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
 image_size = 32
+cropped_size = 26
 num_channels = 1
 pixel_depth = 255
 num_labels = 5
@@ -66,7 +67,6 @@ def TrainConvNet():
 
         return new_X
 
-
     def gaussian_filter(kernel_shape):
         x = np.zeros(kernel_shape, dtype = float)
         mid = np.floor(kernel_shape[0] / 2.)
@@ -102,7 +102,8 @@ def TrainConvNet():
         keep_prob = tf.placeholder(tf.float32, shape=(), name="keep_prob")
         learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
 
-        LCN = LecunLCN(input, (64, image_size, image_size, num_channels))
+        random_crop = tf.random_crop(input, (-1, cropped_size, cropped_size, num_channels), name="random_crop")
+        LCN = LecunLCN(random_crop, (64, image_size, image_size, num_channels))
 
         #Conv->Relu->Conv->Relu->Pool
         with tf.name_scope("Layer1"):
