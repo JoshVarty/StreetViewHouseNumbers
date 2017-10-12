@@ -6,7 +6,7 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
 image_size = 32
-cropped_size = 26
+cropped_size = 24
 num_channels = 1
 pixel_depth = 255
 num_labels = 5
@@ -102,8 +102,9 @@ def TrainConvNet():
         keep_prob = tf.placeholder(tf.float32, shape=(), name="keep_prob")
         learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
 
-        random_crop = tf.random_crop(input, (-1, cropped_size, cropped_size, num_channels), name="random_crop")
-        LCN = LecunLCN(random_crop, (64, image_size, image_size, num_channels))
+        random_crop = tf.random_crop(input, [tf.shape(input)[0], cropped_size, cropped_size, num_channels], name="random_crop")
+        random_crop = tf.reshape(random_crop, [-1, cropped_size,  cropped_size, num_channels])
+        LCN = LecunLCN(random_crop, (None, cropped_size, cropped_size, num_channels))
 
         #Conv->Relu->Conv->Relu->Pool
         with tf.name_scope("Layer1"):
@@ -149,7 +150,7 @@ def TrainConvNet():
             w_conv10 = weight_layer("w_conv10", [patch_size_3, patch_size_3, depth * 8, depth * 16])
             b_conv10 = bias_variable("b_conv10", [depth * 16])
             h_conv10 = conv2d_relu(h_conv9, w_conv10, b_conv10)
-            h_pool10 = max_pool_2x2(h_conv10)
+            h_pool10 = tf.nn.avg_pool(h_conv10, ksize=[1, 2, 2, 1], strides=[1, 1, 1, 1], padding='SAME')
 
         #Dropout -> Fully Connected -> Dropout -> Fully Connected
         with tf.name_scope("FullyConnected"):
@@ -157,7 +158,7 @@ def TrainConvNet():
             shape = drop_1.get_shape().as_list()
             reshape = tf.reshape(drop_1, [-1, shape[1] * shape[2] * shape[3]])
 
-            fc = 1024
+            fc = 2304
             hl = 4096
             w_fc = weight_layer("w_fc", [fc, hl])
             b_fc = bias_variable("b_fc", [hl])
