@@ -109,46 +109,56 @@ def TrainConvNet():
             w_conv1 = weight_layer("w_conv1", [patch_size_3, patch_size_3, num_channels, depth])
             b_conv1 = bias_variable("b_conv1", [depth])
             h_conv1 = conv2d_relu(LCN, w_conv1, b_conv1)
+            lrn_1 = tf.nn.local_response_normalization(h_conv1)
             w_conv2 = weight_layer("w_conv2", [patch_size_3, patch_size_3, depth, depth])
             b_conv2 = bias_variable("b_conv2", [depth])
-            h_conv2 = conv2d_relu(h_conv1, w_conv2, b_conv2)
-            h_pool2 = max_pool_2x2(h_conv2)
+            h_conv2 = conv2d_relu(lrn_1, w_conv2, b_conv2)
+            lrn_2 = tf.nn.local_response_normalization(h_conv2)
+            h_pool2 = max_pool_2x2(lrn_2)
 
         #Conv->Relu->Conv->Relu->Pool
         with tf.name_scope("Layer2"):
             w_conv3 = weight_layer("w_conv3", [patch_size_3, patch_size_3, depth, depth * 2])
             b_conv3 = bias_variable("b_conv3", [depth * 2])
             h_conv3 = conv2d_relu(h_pool2, w_conv3, b_conv3)
+            lrn_3 = tf.nn.local_response_normalization(h_conv3)
             w_conv4 = weight_layer("w_conv4", [patch_size_3, patch_size_3, depth * 2, depth * 4])
             b_conv4 = bias_variable("b_conv4", [depth * 4])
-            h_conv4 = conv2d_relu(h_conv3, w_conv4, b_conv4)
-            h_pool4 = max_pool_2x2(h_conv4)
+            h_conv4 = conv2d_relu(lrn_3, w_conv4, b_conv4)
+            lrn_4 = tf.nn.local_response_normalization(h_conv4)
+            h_pool4 = max_pool_2x2(lrn_4)
 
         #Conv->Relu->Conv->Relu->Conv->Relu->Pool
         with tf.name_scope("Layer3"):
             w_conv5 = weight_layer("w_conv5", [patch_size_3, patch_size_3, depth * 4, depth * 4])
             b_conv5 = bias_variable("b_conv5", [depth * 4])
             h_conv5 = conv2d_relu(h_pool4, w_conv5, b_conv5)
+            lrn_5 = tf.nn.local_response_normalization(h_conv5)
             w_conv6 = weight_layer("w_conv6", [patch_size_3, patch_size_3, depth * 4, depth * 4])
             b_conv6 = bias_variable("b_conv6", [depth * 4])
-            h_conv6 = conv2d_relu(h_conv5, w_conv6, b_conv6)
+            h_conv6 = conv2d_relu(lrn_5, w_conv6, b_conv6)
+            lrn_6 = tf.nn.local_response_normalization(h_conv6)
             w_conv7 = weight_layer("w_conv7", [patch_size_3, patch_size_3, depth * 4, depth * 8])
             b_conv7 = bias_variable("b_conv7", [depth * 8])
-            h_conv7 = conv2d_relu(h_conv6, w_conv7, b_conv7)
-            h_pool7 = max_pool_2x2(h_conv7)
+            h_conv7 = conv2d_relu(lrn_6, w_conv7, b_conv7)
+            lrn_7 = tf.nn.local_response_normalization(h_conv7)
+            h_pool7 = max_pool_2x2(lrn_7)
         
         #Conv->Relu->Conv->Relu->Conv->Relu->Pool
         with tf.name_scope("Layer4"):
             w_conv8 = weight_layer("w_conv8", [patch_size_3, patch_size_3, depth * 8, depth * 8])
             b_conv8 = bias_variable("b_conv8", [depth * 8])
             h_conv8 = conv2d_relu(h_pool7, w_conv8, b_conv8)
+            lrn_8 = tf.nn.local_response_normalization(h_conv8)
             w_conv9 = weight_layer("w_conv9", [patch_size_3, patch_size_3, depth * 8, depth * 8])
             b_conv9 = bias_variable("b_conv9", [depth * 8])
-            h_conv9 = conv2d_relu(h_conv8, w_conv9, b_conv9)
+            h_conv9 = conv2d_relu(lrn_8, w_conv9, b_conv9)
+            lrn_9 = tf.nn.local_response_normalization(h_conv9)
             w_conv10 = weight_layer("w_conv10", [patch_size_3, patch_size_3, depth * 8, depth * 16])
             b_conv10 = bias_variable("b_conv10", [depth * 16])
-            h_conv10 = conv2d_relu(h_conv9, w_conv10, b_conv10)
-            h_pool10 = max_pool_2x2(h_conv10)
+            h_conv10 = conv2d_relu(lrn_9, w_conv10, b_conv10)
+            lrn_10 = tf.nn.local_response_normalization(h_conv10)
+            h_pool10 = max_pool_2x2(lrn_10)
 
         #Dropout -> Fully Connected -> Dropout -> Fully Connected
         with tf.name_scope("FullyConnected"):
