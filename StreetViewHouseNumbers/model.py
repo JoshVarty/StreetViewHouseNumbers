@@ -6,7 +6,7 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
 image_size = 32
-cropped_size = 24
+cropped_size = 26
 num_channels = 1
 pixel_depth = 255
 num_labels = 5
@@ -158,7 +158,7 @@ def TrainConvNet():
             shape = drop_1.get_shape().as_list()
             reshape = tf.reshape(drop_1, [-1, shape[1] * shape[2] * shape[3]])
 
-            fc = 2304
+            fc = 4096
             hl = 4096
             w_fc = weight_layer("w_fc", [fc, hl])
             b_fc = bias_variable("b_fc", [hl])
