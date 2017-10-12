@@ -6,7 +6,7 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
 image_size = 32
-cropped_size = 26
+cropped_size = 28
 num_channels = 1
 pixel_depth = 255
 num_labels = 5
