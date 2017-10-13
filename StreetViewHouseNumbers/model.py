@@ -150,18 +150,19 @@ def TrainConvNet():
             w_conv10 = weight_layer("w_conv10", [patch_size_3, patch_size_3, depth * 8, depth * 16])
             b_conv10 = bias_variable("b_conv10", [depth * 16])
             h_conv10 = conv2d_relu(h_conv9, w_conv10, b_conv10)
+            h_pool10 = max_pool_2x2(h_conv10)
 
         #Dropout -> Fully Connected -> Dropout -> Fully Connected
         with tf.name_scope("FullyConnected"):
-            drop_1 = tf.nn.dropout(h_conv10, 1.0)
+            drop_1 = tf.nn.dropout(h_pool10, keep_prob)
             shape = drop_1.get_shape().as_list()
             reshape = tf.reshape(drop_1, [-1, shape[1] * shape[2] * shape[3]])
 
-            fc = 4096
+            fc = 1024
             hl = 4096
             w_fc = weight_layer("w_fc", [fc, hl])
             b_fc = bias_variable("b_fc", [hl])
-            h_fc = tf.matmul(reshape, w_fc) + b_fc
+            h_fc = tf.nn.relu(tf.matmul(reshape, w_fc) + b_fc)
 
             w_s_1 = weight_layer("z_s_1", [hl, num_digits])
             b_s_1 = bias_variable("b_s_1", [num_digits])
