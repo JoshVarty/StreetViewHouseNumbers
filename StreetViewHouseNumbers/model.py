@@ -102,9 +102,7 @@ def TrainConvNet():
         keep_prob = tf.placeholder(tf.float32, shape=(), name="keep_prob")
         learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
 
-        random_crop = tf.random_crop(input, [tf.shape(input)[0], cropped_size, cropped_size, num_channels], name="random_crop")
-        random_crop = tf.reshape(random_crop, [-1, cropped_size,  cropped_size, num_channels])
-        LCN = LecunLCN(random_crop, (None, cropped_size, cropped_size, num_channels))
+        LCN = LecunLCN(input, (None, image_size, image_size, num_channels))
 
         #Conv->Relu->Conv->Relu->Pool
         with tf.name_scope("Layer1"):
