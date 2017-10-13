@@ -177,7 +177,7 @@ def TrainConvNet():
         with tf.Session(graph=graph) as session:
             writer = tf.summary.FileWriter("/tmp/svhn_single")
             writer.add_graph(session.graph)
-            num_steps = 30000
+            num_steps = 60000
             batch_size = 64
             tf.global_variables_initializer().run()
             print("Initialized")
@@ -189,7 +189,7 @@ def TrainConvNet():
 
                 feed_dict = {input : batch_data, labels : batch_labels, keep_prob : 0.5, learning_rate: lr} 
 
-                if step % 5000 == 0:
+                if step % 10000 == 0:
                     lr = lr / 2
                     print("Learning Rate: ", lr)
 
