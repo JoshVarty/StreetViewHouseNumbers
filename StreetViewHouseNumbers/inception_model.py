@@ -3,6 +3,7 @@ import numpy as np
 #import matplotlib.pyplot as plt
 import data_loader
 import tensorflow as tf
+import tensorflow.contrib.slim as slim
 from sklearn.model_selection import train_test_split
 
 image_size = 32
@@ -11,7 +12,7 @@ num_channels = 1
 pixel_depth = 255
 num_labels = 5
 num_digits = 10
-depth = 16
+depth = 32
 
 patch_size_1 = 1
 patch_size_3 = 3
@@ -100,30 +101,30 @@ def TrainConvNet():
 
     def Inception(input):
         #1x1 Conv
-        w1 = weight_layer("incep_w1", [patch_size_1, patch_size_1, num_channels, depth])
-        b1 = bias_variable("incep_b1", [depth])
+        w1 = weight_layer("incep_w1", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
+        b1 = bias_variable("incep_b1", [input.shape[3]])
         conv1 = conv2d_relu(input, w1, b1)
 
         #1x1 Conv -> 3x3 Conv
-        w2 = weight_layer("incep_w2", [patch_size_1, patch_size_1, num_channels, depth])
-        b2 = bias_variable("incep_b2", [depth])
+        w2 = weight_layer("incep_w2", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
+        b2 = bias_variable("incep_b2", [input.shape[3]])
         conv2 = conv2d_relu(input, w2, b2)
-        w3 = weight_layer("incep_w3", [patch_size_3, patch_size_3, num_channels, depth])
+        w3 = weight_layer("incep_w3", [patch_size_3, patch_size_3, input._shape[3], input.shape[3]])
         b3 = bias_variable("incep_b3", [depth])
         conv3 = conv2d_relu(conv2, w3, b3)
 
         #1x1 Conv -> 5x5 Conv
-        w4 = weight_layer("incep_w4", [patch_size_1, patch_size_1, num_channels, depth])
-        b4 = bias_variable("incep_w4", [depth])
+        w4 = weight_layer("incep_w4", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
+        b4 = bias_variable("incep_b4", [input.shape[3]])
         conv4 = conv2d_relu(input, w4, b4)
-        w5 = weight_layer("incep_w5", [patch_size_5, patch_size_5, num_channels, depth])
-        b5 = bias_variable("incep_w5", [depth])
-        conv5 = conv2d_relu(input, w5, b5)
+        w5 = weight_layer("incep_w5", [patch_size_5, patch_size_5, input.shape[3], input.shape[3]])
+        b5 = bias_variable("incep_b5", [input.shape[3]])
+        conv5 = conv2d_relu(conv4, w5, b5)
 
         #3x3 MaxPool -> 1x1 Conv
         pool1 = tf.nn.max_pool(input, ksize=[1,3,3,1], strides=[1,1,1,1], padding='SAME')
-        w6 = weight_layer("incep_w6", [patch_size_1, patch_size_1, num_channels, depth])
-        b6 = bias_variable("incep_w6", [depth])
+        w6 = weight_layer("incep_w6", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
+        b6 = bias_variable("incep_b6", [input.shape[3]])
         conv6 = conv2d_relu(pool1, w6, b6)
 
         stacked = tf.stack([conv1, conv3, conv5, conv6])
@@ -137,26 +138,15 @@ def TrainConvNet():
         learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
 
         LCN = LecunLCN(input, (None, image_size, image_size, num_channels))
-
         
         with tf.name_scope("Layer1"):
             w_conv1 = weight_layer("w_conv1", [patch_size_7, patch_size_7, num_channels, depth])
             b_conv1 = bias_variable("b_conv1", [depth])
             conv_1 = conv2d_relu(LCN, w_conv1, b_conv1)
-            pool_1 = tf.nn.max_pool(conv_1, ksize=[1,1,1,1], strides=[1,1,1,1], padding="SAME")
+            pool_1 = tf.nn.max_pool(conv_1, ksize=[1,3,3,1], strides=[1,2,2,1], padding="SAME")
             lrn_1 = tf.nn.local_response_normalization(pool_1)
 
-        with tf.name_scope("Layer2"):
-            w_conv2 = weight_layer("w_conv2", [patch_size_1, patch_size_1, num_channels, depth])
-            b_conv2 = bias_variable("b_conv2", [depth])
-            conv_2 = conv2d_relu(lrn_1, w_conv2, b_conv2)
-            w_conv3 = weight_layer("w_conv3", [patch_size_3, patch_size_3, num_channels, depth])
-            b_conv3 = bias_variable("b_conv3", [depth])
-            conv_3 = conv2d_relu(conv_2, w_conv3, b_conv3)
-            lrn_2 = tf.nn.local_response_normalization(conv3)
-            pool_2 = tf.nn.max_pool(lrn_1, ksize=[1,1,1,1], strides=[1,1,1,1])
-
-        incep_1 = Inception(pool_2)
+        incep_1 = Inception(lrn_1)
         incep_2 = Inception(incep_1)
 
         x = incep_2
