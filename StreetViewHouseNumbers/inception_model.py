@@ -99,35 +99,35 @@ def TrainConvNet():
     def max_pool_2x2(input):    
         return tf.nn.max_pool(input, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-    def Inception(input):
+    def Inception(name, input):
         #1x1 Conv
-        w1 = weight_layer("incep_w1", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
-        b1 = bias_variable("incep_b1", [input.shape[3]])
+        w1 = weight_layer(name + "_incep_w1", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
+        b1 = bias_variable(name + "_incep_b1", [input.shape[3]])
         conv1 = conv2d_relu(input, w1, b1)
 
         #1x1 Conv -> 3x3 Conv
-        w2 = weight_layer("incep_w2", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
-        b2 = bias_variable("incep_b2", [input.shape[3]])
+        w2 = weight_layer(name + "_incep_w2", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
+        b2 = bias_variable(name + "_incep_b2", [input.shape[3]])
         conv2 = conv2d_relu(input, w2, b2)
-        w3 = weight_layer("incep_w3", [patch_size_3, patch_size_3, input._shape[3], input.shape[3]])
-        b3 = bias_variable("incep_b3", [depth])
+        w3 = weight_layer(name + "_incep_w3", [patch_size_3, patch_size_3, input._shape[3], input.shape[3]])
+        b3 = bias_variable(name + "_incep_b3", [depth])
         conv3 = conv2d_relu(conv2, w3, b3)
 
         #1x1 Conv -> 5x5 Conv
-        w4 = weight_layer("incep_w4", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
-        b4 = bias_variable("incep_b4", [input.shape[3]])
+        w4 = weight_layer(name + "_incep_w4", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
+        b4 = bias_variable(name + "_incep_b4", [input.shape[3]])
         conv4 = conv2d_relu(input, w4, b4)
-        w5 = weight_layer("incep_w5", [patch_size_5, patch_size_5, input.shape[3], input.shape[3]])
-        b5 = bias_variable("incep_b5", [input.shape[3]])
+        w5 = weight_layer(name + "_incep_w5", [patch_size_5, patch_size_5, input.shape[3], input.shape[3]])
+        b5 = bias_variable(name + "_incep_b5", [input.shape[3]])
         conv5 = conv2d_relu(conv4, w5, b5)
 
         #3x3 MaxPool -> 1x1 Conv
         pool1 = tf.nn.max_pool(input, ksize=[1,3,3,1], strides=[1,1,1,1], padding='SAME')
-        w6 = weight_layer("incep_w6", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
-        b6 = bias_variable("incep_b6", [input.shape[3]])
+        w6 = weight_layer(name + "_incep_w6", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
+        b6 = bias_variable(name + "_incep_b6", [input.shape[3]])
         conv6 = conv2d_relu(pool1, w6, b6)
 
-        stacked = tf.stack([conv1, conv3, conv5, conv6])
+        stacked = tf.concat([conv1, conv3, conv5, conv6], axis=0)
         return stacked
 
     graph = tf.Graph()
@@ -146,8 +146,11 @@ def TrainConvNet():
             pool_1 = tf.nn.max_pool(conv_1, ksize=[1,3,3,1], strides=[1,2,2,1], padding="SAME")
             lrn_1 = tf.nn.local_response_normalization(pool_1)
 
-        incep_1 = Inception(lrn_1)
-        incep_2 = Inception(incep_1)
+        with tf.name_scope("Layer2"):
+            incep_1 = Inception("Layer2", lrn_1)
+        with tf.name_scope("Layer3"):
+            incep_2 = Inception("Layer3", incep_1)
+
 
         x = incep_2
 
