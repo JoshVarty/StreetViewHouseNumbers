@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0e8a3114-4a6d-471c-a7dc-c5fe0b2ee967</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>model.py</StartupFile>
+    <StartupFile>inception_model.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,6 +23,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="data_loader.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="inception_model.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="model.py" />
