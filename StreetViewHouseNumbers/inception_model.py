@@ -119,26 +119,52 @@ def TrainConvNet():
             branch_1 = slim.conv2d(branch_1, 128, [3, 3])
             branch_2 = slim.conv2d(net, 16, [1, 1])
             branch_2 = slim.conv2d(branch_2, 32, [3, 3])
-            branch_3 = slim.max_pool2d(net, [3, 3])
+            branch_3 = slim.max_pool2d(net, [5, 5])
             branch_3 = slim.conv2d(branch_3, 32, [1, 1])
             net = tf.concat(axis=3, values=[branch_0, branch_1, branch_2, branch_3])
 
             #Inception Module 2
             branch_0 = slim.conv2d(net, 128, [1, 1])
             branch_1 = slim.conv2d(net, 128, [1, 1])
-            branch_1 = slim.conv2d(branch_1, 128, [3, 3])
+            branch_1 = slim.conv2d(branch_1, 192, [3, 3])
             branch_2 = slim.conv2d(net, 32, [1, 1])
-            branch_2 = slim.conv2d(branch_2, 96, [3, 3])
+            branch_2 = slim.conv2d(branch_2, 96, [5, 5])
             branch_3 = slim.max_pool2d(net, [3, 3])
             branch_3 = slim.conv2d(branch_3, 64, [1, 1])
             net = tf.concat(axis=3, values=[branch_0, branch_1, branch_2, branch_3])
 
+            #MaxPool
+            net = slim.max_pool2d(net, [3,3], stride=2)
 
+            #Inception Module 3
+            branch_0 = slim.conv2d(net, 192, [1, 1])
+            branch_1 = slim.conv2d(net, 96, [1, 1])
+            branch_1 = slim.conv2d(branch_1, 208, [3, 3])
+            branch_2 = slim.conv2d(net, 16, [1, 1])
+            branch_2 = slim.conv2d(branch_2, 48, [5, 5])
+            branch_3 = slim.max_pool2d(net, [3, 3])
+            branch_3 = slim.conv2d(branch_3, 64, [1, 1])
+            net = tf.concat(axis=3, values=[branch_0, branch_1, branch_2, branch_3])
+
+            #Inception Module 4
+            branch_0 = slim.conv2d(net, 160, [1, 1])
+            branch_1 = slim.conv2d(net, 112, [1, 1])
+            branch_1 = slim.conv2d(branch_1, 224, [3, 3])
+            branch_2 = slim.conv2d(net, 24, [1, 1])
+            branch_2 = slim.conv2d(branch_2, 64, [5, 5])
+            branch_3 = slim.max_pool2d(net, [3, 3])
+            branch_3 = slim.conv2d(branch_3, 64, [1, 1])
+            net = tf.concat(axis=3, values=[branch_0, branch_1, branch_2, branch_3])
+
+            shape = net.get_shape().as_list()
+            reshape = tf.reshape(net, [-1, shape[1] * shape[2] * shape[3]])
             
+            fc = slim.fully_connected(reshape, 4096)
+            logits = slim.fully_connected(fc, 10)
 
-        cost = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=z_s_1))
+        cost = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=logits))
 
-        train_prediction = tf.nn.softmax(z_s_1)
+        train_prediction = tf.nn.softmax(logits)
 
         optimizer = tf.train.AdamOptimizer(learning_rate).minimize(cost)
 
