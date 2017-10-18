@@ -156,9 +156,12 @@ def TrainConvNet():
             branch_3 = slim.conv2d(branch_3, 64, [1, 1])
             net = tf.concat(axis=3, values=[branch_0, branch_1, branch_2, branch_3])
 
+            #MaxPool
+            net = slim.max_pool2d(net, [3,3], stride=2)
+
+            #Fully Connected
             shape = net.get_shape().as_list()
             reshape = tf.reshape(net, [-1, shape[1] * shape[2] * shape[3]])
-            
             fc = slim.fully_connected(reshape, 4096)
             logits = slim.fully_connected(fc, 10)
 
