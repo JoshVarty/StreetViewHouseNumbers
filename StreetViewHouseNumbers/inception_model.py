@@ -156,13 +156,15 @@ def TrainConvNet():
             branch_3 = slim.conv2d(branch_3, 64, [1, 1])
             net = tf.concat(axis=3, values=[branch_0, branch_1, branch_2, branch_3])
 
-            #MaxPool
+            #MaxPool and 1x1 Conv to reduce dimensions
             net = slim.max_pool2d(net, [3,3], stride=2)
+            net = slim.conv2d(net, 128, [1,1])
 
-            #Fully Connected
+            #Two Fully Connected
             shape = net.get_shape().as_list()
             reshape = tf.reshape(net, [-1, shape[1] * shape[2] * shape[3]])
-            fc = slim.fully_connected(reshape, 4096)
+            fc = slim.fully_connected(reshape, 1024)
+            fc = slim.fully_connected(fc, 1024)
             logits = slim.fully_connected(fc, 10)
 
         cost = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=logits))
