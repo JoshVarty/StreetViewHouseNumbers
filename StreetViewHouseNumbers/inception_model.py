@@ -99,37 +99,6 @@ def TrainConvNet():
     def max_pool_2x2(input):    
         return tf.nn.max_pool(input, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-    def Inception(name, input):
-        #1x1 Conv
-        w1 = weight_layer(name + "_incep_w1", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
-        b1 = bias_variable(name + "_incep_b1", [input.shape[3]])
-        conv1 = conv2d_relu(input, w1, b1)
-
-        #1x1 Conv -> 3x3 Conv
-        w2 = weight_layer(name + "_incep_w2", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
-        b2 = bias_variable(name + "_incep_b2", [input.shape[3]])
-        conv2 = conv2d_relu(input, w2, b2)
-        w3 = weight_layer(name + "_incep_w3", [patch_size_3, patch_size_3, input._shape[3], input.shape[3]])
-        b3 = bias_variable(name + "_incep_b3", [depth])
-        conv3 = conv2d_relu(conv2, w3, b3)
-
-        #1x1 Conv -> 5x5 Conv
-        w4 = weight_layer(name + "_incep_w4", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
-        b4 = bias_variable(name + "_incep_b4", [input.shape[3]])
-        conv4 = conv2d_relu(input, w4, b4)
-        w5 = weight_layer(name + "_incep_w5", [patch_size_5, patch_size_5, input.shape[3], input.shape[3]])
-        b5 = bias_variable(name + "_incep_b5", [input.shape[3]])
-        conv5 = conv2d_relu(conv4, w5, b5)
-
-        #3x3 MaxPool -> 1x1 Conv
-        pool1 = tf.nn.max_pool(input, ksize=[1,3,3,1], strides=[1,1,1,1], padding='SAME')
-        w6 = weight_layer(name + "_incep_w6", [patch_size_1, patch_size_1, input.shape[3], input.shape[3]])
-        b6 = bias_variable(name + "_incep_b6", [input.shape[3]])
-        conv6 = conv2d_relu(pool1, w6, b6)
-
-        stacked = tf.concat([conv1, conv3, conv5, conv6], axis=0)
-        return stacked
-
     graph = tf.Graph()
     with graph.as_default():
         input = tf.placeholder(tf.float32, shape=(None, image_size, image_size, num_channels), name="input")
@@ -138,28 +107,34 @@ def TrainConvNet():
         learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
 
         LCN = LecunLCN(input, (None, image_size, image_size, num_channels))
-        
-        with tf.name_scope("Layer1"):
-            w_conv1 = weight_layer("w_conv1", [patch_size_7, patch_size_7, num_channels, depth])
-            b_conv1 = bias_variable("b_conv1", [depth])
-            conv_1 = conv2d_relu(LCN, w_conv1, b_conv1)
-            pool_1 = tf.nn.max_pool(conv_1, ksize=[1,3,3,1], strides=[1,2,2,1], padding="SAME")
-            lrn_1 = tf.nn.local_response_normalization(pool_1)
 
-        with tf.name_scope("Layer2"):
-            incep_1 = Inception("Layer2", lrn_1)
-        with tf.name_scope("Layer3"):
-            incep_2 = Inception("Layer3", incep_1)
+        with slim.arg_scope([slim.conv2d, slim.max_pool2d], stride=1, padding='SAME'):
+
+            net = slim.conv2d(LCN, 64, [3,3])
+            net = slim.conv2d(net, 64, [3,3])
+
+            #Inception Module 1
+            branch_0 = slim.conv2d(net, 64, [1, 1])
+            branch_1 = slim.conv2d(net, 96, [1, 1])
+            branch_1 = slim.conv2d(branch_1, 128, [3, 3])
+            branch_2 = slim.conv2d(net, 16, [1, 1])
+            branch_2 = slim.conv2d(branch_2, 32, [3, 3])
+            branch_3 = slim.max_pool2d(net, [3, 3])
+            branch_3 = slim.conv2d(branch_3, 32, [1, 1])
+            net = tf.concat(axis=3, values=[branch_0, branch_1, branch_2, branch_3])
+
+            #Inception Module 2
+            branch_0 = slim.conv2d(net, 128, [1, 1])
+            branch_1 = slim.conv2d(net, 128, [1, 1])
+            branch_1 = slim.conv2d(branch_1, 128, [3, 3])
+            branch_2 = slim.conv2d(net, 32, [1, 1])
+            branch_2 = slim.conv2d(branch_2, 96, [3, 3])
+            branch_3 = slim.max_pool2d(net, [3, 3])
+            branch_3 = slim.conv2d(branch_3, 64, [1, 1])
+            net = tf.concat(axis=3, values=[branch_0, branch_1, branch_2, branch_3])
 
 
-        x = incep_2
-
-
-
-
-
-
-
+            
 
         cost = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=z_s_1))
 
