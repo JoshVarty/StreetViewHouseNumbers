@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0e8a3114-4a6d-471c-a7dc-c5fe0b2ee967</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>inception_model.py</StartupFile>
+    <StartupFile>resnet_module.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -29,6 +29,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="model.py" />
+    <Compile Include="resnet_module.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|VisualStudio|Josh" />
