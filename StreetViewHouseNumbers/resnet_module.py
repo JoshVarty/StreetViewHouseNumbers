@@ -88,7 +88,7 @@ def TrainConvNet():
         return  1. / Z * np.exp(-(x ** 2 + y ** 2) / (2. * sigma ** 2))
 
     last_weight_num = 0
-    def weight_layer(name, shape):
+    def weight_layer(shape):
         last_weight_num = last_weight_num + 1
         return tf.get_variable("w_ " + str(last_weight_num), shape, initializer=tf.contrib.layers.xavier_initializer())
 
