@@ -29,6 +29,9 @@ print("Valid labels", valid_labels.shape)
 def accuracy(labels, predictions):
     return (100.0 * np.sum(np.argmax(predictions, 1) == labels) / predictions.shape[0])
 
+last_weight_num = 0
+last_bias_num = 0
+
 def TrainConvNet():
 
     def LecunLCN(X, image_shape, threshold=1e-4, radius=7, use_divisor=True):
@@ -87,13 +90,13 @@ def TrainConvNet():
         Z = 2 * np.pi * sigma ** 2
         return  1. / Z * np.exp(-(x ** 2 + y ** 2) / (2. * sigma ** 2))
 
-    last_weight_num = 0
     def weight_layer(shape):
+        global last_weight_num
         last_weight_num = last_weight_num + 1
-        return tf.get_variable("w_ " + str(last_weight_num), shape, initializer=tf.contrib.layers.xavier_initializer())
+        return tf.get_variable("w_" + str(last_weight_num), shape, initializer=tf.contrib.layers.xavier_initializer())
 
-    last_bias_num = 0
     def bias_variable(shape):
+        global last_bias_num 
         last_bias_num = last_bias_num + 1
         return tf.get_variable("b_" + str(last_bias_num), shape, initializer=tf.contrib.layers.xavier_initializer())
 
@@ -172,7 +175,7 @@ def TrainConvNet():
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
         
         net = slim.conv2d(skip, 64, [3, 3])
-        w = weight_layer(image_size, image_size, 64, 64])
+        w = weight_layer([image_size, image_size, 64, 64])
         b = bias_variable([64])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
 
