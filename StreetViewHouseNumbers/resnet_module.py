@@ -87,11 +87,15 @@ def TrainConvNet():
         Z = 2 * np.pi * sigma ** 2
         return  1. / Z * np.exp(-(x ** 2 + y ** 2) / (2. * sigma ** 2))
 
+    last_weight_num = 0
     def weight_layer(name, shape):
-        return tf.get_variable(name, shape, initializer=tf.contrib.layers.xavier_initializer())
+        last_weight_num = last_weight_num + 1
+        return tf.get_variable("w_ " + str(last_weight_num), shape, initializer=tf.contrib.layers.xavier_initializer())
 
-    def bias_variable(name, shape):
-          return tf.get_variable(name, shape, initializer=tf.contrib.layers.xavier_initializer())
+    last_bias_num = 0
+    def bias_variable(shape):
+        last_bias_num = last_bias_num + 1
+        return tf.get_variable("b_" + str(last_bias_num), shape, initializer=tf.contrib.layers.xavier_initializer())
 
     def conv2d_relu(input, weights, bias):
         return tf.nn.relu(tf.nn.conv2d(input, weights, [1,1,1,1], padding="SAME") + bias)
@@ -113,63 +117,63 @@ def TrainConvNet():
 
         #16
         net = slim.conv2d(skip, 16, [3, 3])
-        w = weight_layer("w1", [image_size, image_size, 16, 16])
-        b = bias_variable("b1", [16])
+        w = weight_layer([image_size, image_size, 16, 16])
+        b = bias_variable([16])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
 
         net = slim.conv2d(skip, 16, [3, 3])
-        w = weight_layer("w2", [image_size, image_size, 16, 16])
-        b = bias_variable("b2", [16])
+        w = weight_layer([image_size, image_size, 16, 16])
+        b = bias_variable([16])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
 
         net = slim.conv2d(skip, 16, [3, 3])
-        w = weight_layer("w3", [image_size, image_size, 16, 16])
-        b = bias_variable("b3", [16])
+        w = weight_layer([image_size, image_size, 16, 16])
+        b = bias_variable([16])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
         
         #32
         net = slim.conv2d(skip, 32, [3, 3], stride=2)
         skip = slim.conv2d(skip, 32, [1,1], stride=2)
-        w = weight_layer("w4", [image_size, image_size, 32, 32])
-        b = bias_variable("b4", [32])
+        w = weight_layer([image_size, image_size, 32, 32])
+        b = bias_variable([32])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
 
         net = slim.conv2d(skip, 32, [3, 3])
-        w = weight_layer("w5", [image_size, image_size, 32, 32])
-        b = bias_variable("b5", [32])
+        w = weight_layer([image_size, image_size, 32, 32])
+        b = bias_variable([32])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
 
         net = slim.conv2d(skip, 32, [3, 3])
-        w = weight_layer("w6", [image_size, image_size, 32, 32])
-        b = bias_variable("b6", [32])
+        w = weight_layer([image_size, image_size, 32, 32])
+        b = bias_variable([32])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
 
         net = slim.conv2d(skip, 32, [3, 3])
-        w = weight_layer("w7", [image_size, image_size, 32, 32])
-        b = bias_variable("b7", [32])
+        w = weight_layer([image_size, image_size, 32, 32])
+        b = bias_variable([32])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
         
         
         #64
         net = slim.conv2d(skip, 64, [3, 3], stride=2)
         skip = slim.conv2d(skip, 64, [1,1], stride=2)
-        w = weight_layer("w4", [image_size, image_size, 64, 64])
-        b = bias_variable("b4", [64])
+        w = weight_layer([image_size, image_size, 64, 64])
+        b = bias_variable([64])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
 
         net = slim.conv2d(skip, 64, [3, 3])
-        w = weight_layer("w4", [image_size, image_size, 64, 64])
-        b = bias_variable("b4", [64])
+        w = weight_layer([image_size, image_size, 64, 64])
+        b = bias_variable([64])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
 
         net = slim.conv2d(skip, 64, [3, 3])
-        w = weight_layer("w4", [image_size, image_size, 64, 64])
-        b = bias_variable("b4", [64])
+        w = weight_layer([image_size, image_size, 64, 64])
+        b = bias_variable([64])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
         
         net = slim.conv2d(skip, 64, [3, 3])
-        w = weight_layer("w4", [image_size, image_size, 64, 64])
-        b = bias_variable("b4", [64])
+        w = weight_layer(image_size, image_size, 64, 64])
+        b = bias_variable([64])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
 
         cost = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=logits))
