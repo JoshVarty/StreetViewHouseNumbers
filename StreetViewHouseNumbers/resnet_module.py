@@ -179,6 +179,10 @@ def TrainConvNet():
         b = bias_variable([64])
         skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
 
+        avg_pool = tf.nn.avg_pool(skip, ksize=[1,8,8,1], strides=[1,1,1,1], padding="VALID")
+        squeezed = tf.squeeze(avg_pool, axis=[1,2])
+        logits = slim.fully_connected(squeezed, num_digits)
+
         cost = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=logits))
 
         train_prediction = tf.nn.softmax(logits)
