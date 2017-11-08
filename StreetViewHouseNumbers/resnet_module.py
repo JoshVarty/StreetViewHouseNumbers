@@ -196,11 +196,17 @@ def TrainConvNet():
         keep_prob = tf.placeholder(tf.float32, shape=(), name="keep_prob")
         learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
 
-        LCN = LecunLCN(input, (None, image_size, image_size, num_channels))
+        input = LecunLCN(input, (None, image_size, image_size, num_channels))
 
         #Replacing 7x7 Conv->MaxPool with 3x3 Conv due to size
-        skip = slim.conv2d(LCN, 16, [5, 5])
-
+        shape = input.shape.as_list()
+        weights = weight_layer([shape[0], 3, 3, 16])
+        bias = bias_variable([16])
+        net = tf.nn.conv2d(input, weights, strides=[1,1,1,1], padding='SAME') + bias
+        net = tf.nn.batch_normalization(net, name="bn_conv1")
+        net = tf.nn.relu(net)
+        net = tf.nn.max_pool(net, ksize=[1,3,3,1], strides=[1,2,2,1], padding='SAME')
+        
         #16
         net = slim.conv2d(skip, 16, [3, 3])
         w = weight_layer([image_size, image_size, 16, 16])
