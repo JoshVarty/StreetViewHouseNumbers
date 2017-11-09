@@ -288,7 +288,7 @@ def TrainConvNet(lr = 0.0001):
 
                     print('Valid accuracy: %.1f%%' % accuracy(np.squeeze(valid_labels), v_preds))
                 elif step % 100:
-                    m, _, l, predictions, = session.run([merged, optimizer, cost, train_prediction], feed_dict=feed_dict)
+                    _, l, predictions, m = session.run([optimizer, cost, train_prediction, merged], feed_dict=feed_dict)
                     tf.summary.scalar("loss_" + lr, l)
                     writer.add_summary(m, step)
                 else:
