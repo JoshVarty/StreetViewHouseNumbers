@@ -142,9 +142,6 @@ def TrainConvNet():
 
         return net
 
-
-
-
     def convolutional_block(net, filter_size, filters, stage, block, stride=2):
         conv_name_base = 'res' + str(stage) + block + '_branch'
         bn_name_base = 'bn' + str(stage) + block + '_branch'
@@ -188,8 +185,7 @@ def TrainConvNet():
 
         return net
 
-
-    graph = tf.Graph()
+    graph = tf.Graph(lr = 0.0001)
     with graph.as_default():
         input = tf.placeholder(tf.float32, shape=(None, image_size, image_size, num_channels), name="input")
         labels = tf.placeholder(tf.int32, shape=(None), name="labels")
@@ -248,11 +244,10 @@ def TrainConvNet():
         with tf.Session(graph=graph) as session:
             writer = tf.summary.FileWriter("/tmp/svhn_single")
             writer.add_graph(session.graph)
+            merged = tf.summary.merge_all()
             num_steps = 60000
             batch_size = 64
             tf.global_variables_initializer().run()
-            print("Initialized")
-            lr = 0.0001
             for step in range(num_steps):
                 offset = (step * batch_size) % (train_labels.shape[0] - batch_size)
                 batch_data = train_data[offset:(offset + batch_size), :, :]
@@ -262,7 +257,6 @@ def TrainConvNet():
 
                 if step % 10000 == 0:
                     lr = lr / 2
-                    print("Learning Rate: ", lr)
 
                 if step % 500 == 0:
                     _, l, predictions, = session.run([optimizer, cost, train_prediction], feed_dict=feed_dict)
@@ -293,10 +287,13 @@ def TrainConvNet():
                         v_preds[v_offset: v_offset + predictions.shape[0],:] = predictions
 
                     print('Valid accuracy: %.1f%%' % accuracy(np.squeeze(valid_labels), v_preds))
+                elif step % 100:
+                    m, _, l, predictions, = session.run([merged, optimizer, cost, train_prediction], feed_dict=feed_dict)
+                    tf.summary.scalar("loss_" + lr, l)
+                    writer.add_summary(m, step)
                 else:
                     _, l, predictions, = session.run([optimizer, cost, train_prediction], feed_dict=feed_dict)
 
 
-TrainConvNet()
-
-
+if __name__ == '__main__':
+    TrainConvNet()
