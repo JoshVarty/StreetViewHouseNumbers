@@ -236,15 +236,16 @@ def TrainConvNet(lr = 0.0001):
         logits = tf.matmul(reshape, weight) + bias
 
         cost = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=logits))
+        tf.summary.scalar("loss_" + lr, l)
 
         train_prediction = tf.nn.softmax(logits)
 
         optimizer = tf.train.AdamOptimizer(learning_rate).minimize(cost)
 
         with tf.Session(graph=graph) as session:
+            merged = tf.summary.merge_all()
             writer = tf.summary.FileWriter("/tmp/svhn_single")
             writer.add_graph(session.graph)
-            merged = tf.summary.merge_all()
             num_steps = 60000
             batch_size = 64
             tf.global_variables_initializer().run()
@@ -289,7 +290,6 @@ def TrainConvNet(lr = 0.0001):
                     print('Valid accuracy: %.1f%%' % accuracy(np.squeeze(valid_labels), v_preds))
                 elif step % 100:
                     _, l, predictions, m = session.run([optimizer, cost, train_prediction, merged], feed_dict=feed_dict)
-                    tf.summary.scalar("loss_" + lr, l)
                     writer.add_summary(m, step)
                 else:
                     _, l, predictions, = session.run([optimizer, cost, train_prediction], feed_dict=feed_dict)
