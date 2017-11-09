@@ -32,7 +32,7 @@ def accuracy(labels, predictions):
 last_weight_num = 0
 last_bias_num = 0
 
-def TrainConvNet():
+def TrainConvNet(lr = 0.0001):
 
     def LecunLCN(X, image_shape, threshold=1e-4, radius=7, use_divisor=True):
         """Local Contrast Normalization"""
@@ -185,7 +185,7 @@ def TrainConvNet():
 
         return net
 
-    graph = tf.Graph(lr = 0.0001)
+    graph = tf.Graph()
     with graph.as_default():
         input = tf.placeholder(tf.float32, shape=(None, image_size, image_size, num_channels), name="input")
         labels = tf.placeholder(tf.int32, shape=(None), name="labels")
