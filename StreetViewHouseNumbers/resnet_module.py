@@ -236,7 +236,7 @@ def TrainConvNet(lr = 0.0001):
         logits = tf.matmul(reshape, weight) + bias
 
         cost = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=logits))
-        tf.summary.scalar("loss_" + lr, l)
+        tf.summary.scalar("loss_" + str(lr), l)
 
         train_prediction = tf.nn.softmax(logits)
 
