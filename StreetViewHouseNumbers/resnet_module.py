@@ -115,26 +115,26 @@ def TrainConvNet():
 
         #First component of main path
         shape = net.shape.as_list()
-        weights = weight_layer([shape[0], 1, 1, F1])
+        weights = weight_layer([1, 1, shape[3], F1])
         bias = bias_variable([F1])
         net = tf.nn.conv2d(net, weights, strides=[1,1,1,1], padding='VALID', name=conv_name_base + '2a') + bias
-        net = tf.nn.batch_normalization(net, name=bn_name_base + '2a')
+        net = tf.layers.batch_normalization(net, name=bn_name_base + '2a')
         net = tf.nn.relu(net)
 
         #Second component of main path
         shape = net.shape.as_list()
-        weights = weight_layer([shape[0], filter_size, filter_size, F2])
+        weights = weight_layer([filter_size, filter_size, shape[3], F2])
         bias = bias_variable([F2])
         net = tf.nn.conv2d(net, weights, strides=[1,1,1,1], padding='SAME', name=conv_name_base + '2b') + bias
-        net = tf.nn.batch_normalization(net, name=bn_name_base + '2b')
+        net = tf.layers.batch_normalization(net, name=bn_name_base + '2b')
         net = tf.nn.relu(net)
 
         #Third component of main path
         shape = net.shape.as_list()
-        weights = weight_layer([shape[0], 1, 1, F3])
+        weights = weight_layer([1, 1, shape[3], F3])
         bias = bias_variable([F3])
         net = tf.nn.conv2d(net, weights, strides=[1,1,1,1], padding='VALID', name=conv_name_base + '2c') + bias
-        net = tf.nn.batch_normalization(net, name=bn_name_base + '2c')
+        net = tf.layers.batch_normalization(net, name=bn_name_base + '2c')
 
         #Final step: Add shortcut value to main path
         net = tf.add(net, shortcut)
@@ -154,33 +154,33 @@ def TrainConvNet():
 
         #First component of main path
         shape = net.shape.as_list()
-        weights = weight_layer([shape[0], 1, 1, F1])
+        weights = weight_layer([1, 1, shape[3], F1])
         bias = bias_variable([F1])
         net = tf.nn.conv2d(net, weights, strides=[1,stride,stride,1], padding='VALID', name=conv_name_base + '2a') + bias
-        net = tf.nn.batch_normalization(net, name=bn_name_base + '2a')
+        net = tf.layers.batch_normalization(net, name=bn_name_base + '2a')
         net = tf.nn.relu(net)
 
         #Second component of main path
         shape = net.shape.as_list()
-        weights = weight_layer([shape[0], filter_size, filter_size, F2])
+        weights = weight_layer([filter_size, filter_size, shape[3], F2])
         bias = bias_variable([F2])
         net = tf.nn.conv2d(net, weights, strides=[1,1,1,1], padding='SAME', name=conv_name_base + '2b')
-        net = tf.nn.batch_normalization(net, name=bn_name_base + '2b')
+        net = tf.layers.batch_normalization(net, name=bn_name_base + '2b')
         net = tf.nn.relu(net)
 
         #Third component of main path
         shape = net.shape.as_list()
-        weights = weight_layer([shape[0], 1, 1, F3])
+        weights = weight_layer([1, 1, shape[3], F3])
         bias = bias_variable([F3])
         net = tf.nn.conv2d(net, weights, strides=[1,1,1,1], padding='VALID', name=conv_name_base + '2c')
-        net = tf.nn.batch_normalization(net, name=bn_name_base + '2c')
+        net = tf.layers.batch_normalization(net, name=bn_name_base + '2c')
 
         #Shortcut path
         shape = shortcut.shape.as_list()
-        weights = weight_layer([shape[0], 1, 1, F3],)
+        weights = weight_layer([1, 1, shape[3], F3],)
         bias = bias_variable([F3])
-        shortcut = tf.nn.conv2d(shortcut, weights, strides=[1, stride, stride, 1], name=conv_name_base + '1')
-        shortcut = tf.nn.batch_normalization(shortcut, name=bn_name_base + '1')
+        shortcut = tf.nn.conv2d(shortcut, weights, strides=[1, stride, stride, 1], padding='VALID', name=conv_name_base + '1')
+        shortcut = tf.layers.batch_normalization(shortcut, name=bn_name_base + '1')
 
         #Add shortcut to main path
         net = tf.add(shortcut, net)
@@ -200,77 +200,44 @@ def TrainConvNet():
 
         #Replacing 7x7 Conv->MaxPool with 3x3 Conv due to size
         shape = input.shape.as_list()
-        weights = weight_layer([shape[0], 3, 3, 16])
+        weights = weight_layer([3, 3, shape[3], 16])
         bias = bias_variable([16])
         net = tf.nn.conv2d(input, weights, strides=[1,1,1,1], padding='SAME') + bias
-        net = tf.nn.batch_normalization(net, name="bn_conv1")
+        net = tf.layers.batch_normalization(net, name="bn_conv1")
         net = tf.nn.relu(net)
         net = tf.nn.max_pool(net, ksize=[1,3,3,1], strides=[1,2,2,1], padding='SAME')
         
-        #16
-        net = slim.conv2d(skip, 16, [3, 3])
-        w = weight_layer([image_size, image_size, 16, 16])
-        b = bias_variable([16])
-        skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
+        #Stage 2
+        net = convolutional_block(net, filter_size=3, filters=[64, 64, 256], stage=2, block='a', stride=1)
+        net = identity_block(net, filter_size=3, filters=[64, 64, 256], stage=2, block='b')
+        net = identity_block(net, filter_size=3, filters=[64, 64, 256], stage=2, block='c')
 
-        net = slim.conv2d(skip, 16, [3, 3])
-        w = weight_layer([image_size, image_size, 16, 16])
-        b = bias_variable([16])
-        skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
+        #Stage3
+        net = convolutional_block(net, filter_size=3, filters=[128, 128, 512], stage=3, block='a', stride=2)
+        net = identity_block(net, filter_size=3, filters=[128, 128, 512], stage=3, block='b')
+        net = identity_block(net, filter_size=3, filters=[128, 128, 512], stage=3, block='c')
+        net = identity_block(net, filter_size=3, filters=[128, 128, 512], stage=3, block='d')
 
-        net = slim.conv2d(skip, 16, [3, 3])
-        w = weight_layer([image_size, image_size, 16, 16])
-        b = bias_variable([16])
-        skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
-        
-        #32
-        net = slim.conv2d(skip, 32, [3, 3], stride=2)
-        skip = slim.conv2d(skip, 32, [1,1], stride=2)
-        w = weight_layer([image_size, image_size, 32, 32])
-        b = bias_variable([32])
-        skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
+        #Stage4
+        net = convolutional_block(net, filter_size=3, filters=[256, 256, 1024], stage=4, block='a', stride=2)
+        net = identity_block(net, filter_size=3, filters=[256, 256, 1024], stage=4, block='b')
+        net = identity_block(net, filter_size=3, filters=[256, 256, 1024], stage=4, block='c')
+        net = identity_block(net, filter_size=3, filters=[256, 256, 1024], stage=4, block='d')
+        net = identity_block(net, filter_size=3, filters=[256, 256, 1024], stage=4, block='e')
+        net = identity_block(net, filter_size=3, filters=[256, 256, 1024], stage=4, block='f')
 
-        net = slim.conv2d(skip, 32, [3, 3])
-        w = weight_layer([image_size, image_size, 32, 32])
-        b = bias_variable([32])
-        skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
+        #Stage5
+        net = convolutional_block(net, filter_size=3, filters=[512, 512, 2048], stage=5, block='a', stride=2)
+        net = identity_block(net, filter_size=3, filters=[512, 512, 2048], stage=5, block='b')
+        net = identity_block(net, filter_size=3, filters=[512, 512, 2048], stage=5, block='c')
 
-        net = slim.conv2d(skip, 32, [3, 3])
-        w = weight_layer([image_size, image_size, 32, 32])
-        b = bias_variable([32])
-        skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
+        net = tf.nn.avg_pool(net, ksize=[1,2,2,1], strides=[1,1,1,1], padding='VALID')
+        shape = net.shape.as_list()
+        reshape = tf.reshape(net, [-1, shape[3]])
 
-        net = slim.conv2d(skip, 32, [3, 3])
-        w = weight_layer([image_size, image_size, 32, 32])
-        b = bias_variable([32])
-        skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
-        
-        
-        #64
-        net = slim.conv2d(skip, 64, [3, 3], stride=2)
-        skip = slim.conv2d(skip, 64, [1,1], stride=2)
-        w = weight_layer([image_size, image_size, 64, 64])
-        b = bias_variable([64])
-        skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
-
-        net = slim.conv2d(skip, 64, [3, 3])
-        w = weight_layer([image_size, image_size, 64, 64])
-        b = bias_variable([64])
-        skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
-
-        net = slim.conv2d(skip, 64, [3, 3])
-        w = weight_layer([image_size, image_size, 64, 64])
-        b = bias_variable([64])
-        skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
-        
-        net = slim.conv2d(skip, 64, [3, 3])
-        w = weight_layer([image_size, image_size, 64, 64])
-        b = bias_variable([64])
-        skip = tf.nn.relu(tf.nn.conv2d(net, w, [1,1,1,1], padding="SAME") + b + skip)
-
-        avg_pool = tf.nn.avg_pool(skip, ksize=[1,8,8,1], strides=[1,1,1,1], padding="VALID")
-        squeezed = tf.squeeze(avg_pool, axis=[1,2])
-        logits = slim.fully_connected(squeezed, num_digits)
+        weight = weight_layer([shape[3], num_digits])
+        bias = bias_variable([num_digits])
+        logits = tf.matmul(reshape, weight) + bias
 
         cost = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=logits))
 
