@@ -25,6 +25,9 @@
     <Compile Include="data_loader.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="driver.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="inception_model.py">
       <SubType>Code</SubType>
     </Compile>
