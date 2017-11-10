@@ -288,7 +288,8 @@ def TrainConvNet(lr = 0.0001):
                         v_preds[v_offset: v_offset + predictions.shape[0],:] = predictions
 
                     print('Valid accuracy: %.1f%%' % accuracy(np.squeeze(valid_labels), v_preds))
-                elif step % 100:
+
+                if step % 100 == 0:
                     _, l, predictions, m = session.run([optimizer, cost, train_prediction, merged], feed_dict=feed_dict)
                     writer.add_summary(m, step)
                 else:
